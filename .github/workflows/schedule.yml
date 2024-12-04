@@ -1,0 +1,26 @@
+name: Run Bot Every 30 Minutes
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"  # Runs every 30 minutes
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18  # Use the Node.js version you're using locally
+
+      - name: Install Dependencies
+        run: |
+          npm install
+
+      - name: Run Bot
+        run: |
+          node index.js
