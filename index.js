@@ -1,5 +1,6 @@
 require('dotenv').config();
-const { chromium } = require('playwright');
+const axios = require('axios');
+const cheerio = require('cheerio');
 const TelegramBot = require('node-telegram-bot-api');
 const fs = require('fs');
 
@@ -34,54 +35,35 @@ const sendToTelegram = async (chatId, message) => {
     }
 };
 
-// Function to fetch new apartment listings from Yad2
-const fetchYad2Listings = async (page, url) => {
+// Function to fetch new apartment listings from Yad2 using Axios and Cheerio
+const fetchYad2Listings = async (url) => {
     try {
-        console.log(`Navigating to: ${url}`);
-        const response = await page.goto(url);
-        if (response) {
-            console.log(`Response status: ${response.status()} for URL: ${url}`);
-        } else {
-            console.log(`No response received, possible navigation issue.`);
-        }
+        console.log(`Fetching URL: ${url}`);
+        const response = await axios.get(url);
+        const html = response.data;
+        const $ = cheerio.load(html);
 
-        const noResultsSelector = '.no-feed-results-with-alert_title__HVFR0';
-        const hasNoResults = await page.$(noResultsSelector);
+        const listings = [];
 
-        if (hasNoResults) {
-            console.log('No results found for this URL, skipping to the next URL.');
-            return [];
-        }
+        // Example selectors; update according to the Yad2 website's structure
+        $('#__next ul li').each((index, element) => {
+            const title = $(element).find('.item-data-content_heading__tphH4').text().trim() || 'No title';
+            const price = $(element).find('span.price_price__xQt90').text().trim() || 'No price';
+            const link = $(element).find('a').attr('href') || 'No link';
 
-        await page.waitForSelector('#__next > div > main > div.map-page-layout_feedBox__TgEg3 > div > div > div.container_container__w5yC0.map-feed_feedListContainer__KX5dg > ul', { timeout: 60000 });
-
-        console.log('Fetching listings...');
-        const listings = await page.$$eval('#__next > div > main > div.map-page-layout_feedBox__TgEg3 > div > div > div.container_container__w5yC0.map-feed_feedListContainer__KX5dg > ul > li', (items) => {
-            return items.map(item => {
-                const title = item.querySelector('.item-data-content_heading__tphH4')?.innerText || 'No title';
-                const price = item.querySelector('span.price_price__xQt90')?.innerText || 'No price';
-                const linkElement = item.querySelector('a');
-                const link = linkElement ? linkElement.href : 'No link';
-                return { title, price, link };
-            });
+            listings.push({ title, price, link });
         });
 
+        console.log('Fetched listings:', listings);
         return listings;
     } catch (error) {
-        console.error('Error fetching listings:', error);
+        console.error('Error fetching Yad2 listings:', error);
         return [];
     }
 };
 
 // Function to load the last checked listings from a file
 const loadLastCheckedListings = (filePath) => {
-    console.log(`Looking for file at: ${filePath}`);
-    if (!fs.existsSync(filePath)) {
-        console.error(`File not found at: ${filePath}`);
-    } else {
-        console.log('File found!');
-    }
-
     if (fs.existsSync(filePath)) {
         const data = fs.readFileSync(filePath, 'utf8');
         return JSON.parse(data);
@@ -98,16 +80,11 @@ const saveLastCheckedListings = (filePath, data) => {
 const main = async () => {
     const filePath = 'lastCheckedListings.json';
 
-    console.log('Launching browser...');
-    const browser = await chromium.launch({ headless: false }); // Run in headful mode for debugging
-    const context = await browser.newContext();
-    const page = await context.newPage();
-
     let lastCheckedListings = loadLastCheckedListings(filePath);
 
     while (true) {
         for (const url of urls) {
-            const newListings = await fetchYad2Listings(page, url);
+            const newListings = await fetchYad2Listings(url);
             for (const listing of newListings) {
                 const listingKey = `${listing.title}-${listing.price}`;
                 if (!lastCheckedListings[listingKey]) {
@@ -122,14 +99,9 @@ const main = async () => {
             }
         }
         saveLastCheckedListings(filePath, lastCheckedListings);
-        console.log('LAST DATA:');
-        console.log(lastCheckedListings);
-        console.log('------------------------------------------------------------------');
         console.log('Waiting for 1 minute...');
         await new Promise(resolve => setTimeout(resolve, 60000)); // Wait for 1 minute
     }
-
-    await browser.close();
 };
 
 main();
