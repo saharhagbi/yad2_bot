@@ -24,10 +24,6 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      # Install Playwright Browsers
-      - name: Install Playwright Browsers
-        run: npx playwright install
-
       # Load environment variables from GitHub Secrets
       - name: Set environment variables
         env:
