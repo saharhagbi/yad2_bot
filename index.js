@@ -5,18 +5,22 @@ const fs = require('fs');
 
 // Load environment variables
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
-const users = JSON.parse(process.env.USER_DATA || '[]');
-const urls = JSON.parse(process.env.URLS || '[]');
+const users = process.env.USER_DATA ? JSON.parse(process.env.USER_DATA) : [];
+const urls = process.env.URLS ? JSON.parse(process.env.URLS) : [];
 
 if (!TELEGRAM_BOT_TOKEN) {
-    console.error("TELEGRAM_BOT_TOKEN is missing. Please check your .env file.");
+    console.error("TELEGRAM_BOT_TOKEN is missing. Ensure it's set as a GitHub secret or in your .env file.");
     process.exit(1);
 }
+
 if (users.length === 0) {
-    console.warn("No users found in USER_DATA. Check your .env file.");
+    console.warn("No users found in USER_DATA. Check your GitHub secrets or .env file.");
 }
+
 if (urls.length === 0) {
-    console.warn("No URLs found in URLS. Check your .env file.");
+    console.warn("No URLs found in URLS. Check your GitHub secrets or .env file.");
+}
+
 }
 
 // Initialize the Telegram bot
