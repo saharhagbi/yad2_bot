@@ -33,6 +33,10 @@ jobs:
           echo "USER_DATA=$USER_DATA" >> .env
           echo "URLS=$URLS" >> .env
           echo "HEADLESS_MODE=$HEADLESS_MODE" >> .env
+          
+      - name: Debug .env File
+        run: cat .env
+
 
       - name: Generate LastCheckedListings.json
         run: |
