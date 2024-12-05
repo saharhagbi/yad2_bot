@@ -18,12 +18,15 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: v18  # Specify your Node.js version
+          node-version: 18  # Use a stable Node.js version
 
       # Install dependencies
       - name: Install Dependencies
         run: npm ci
 
+      # Install Playwright Browsers
+      - name: Install Playwright Browsers
+        run: npx playwright install
 
       # Load environment variables from GitHub Secrets
       - name: Set environment variables
@@ -34,13 +37,10 @@ jobs:
           HEADLESS_MODE: ${{ secrets.HEADLESS_MODE }}
         run: |
           echo "TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN" >> .env
-          echo "HEADER=$HEADER" >> .env
-          # For testing: print env vars (comment/remove in production)
-          echo "Environment variables set."
-          echo "TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN"
-          echo "USER_DATA=$USER_DATA"
-          
+          echo "USER_DATA=$USER_DATA" >> .env
+          echo "URLS=$URLS" >> .env
+          echo "HEADLESS_MODE=$HEADLESS_MODE" >> .env
+
       # Run the bot
       - name: Run Bot
         run: node --trace-warnings index.js
-
