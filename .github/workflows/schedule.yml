@@ -1,8 +1,8 @@
-name: Run Bot Every Minute
+name: Run Bot Every 30 Minutes
 
 on:
   schedule:
-    - cron: "*/1 * * * *"  # Runs every 1 minute
+    - cron: "*/30 * * * *"  # Runs every 30 minutes
   workflow_dispatch:       # Allows manual triggering
 
 jobs:
@@ -10,18 +10,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Check out the repository
       - name: Checkout Code
         uses: actions/checkout@v3
 
+      # Step 2: Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: v23.2.0
+          node-version: v23.2.0  # Specify your Node.js version
 
+      # Step 3: Install dependencies
       - name: Install Dependencies
         run: |
           npm install
 
+      # Step 4: Inject Environment Variables
       - name: Inject Environment Variables
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -33,15 +37,8 @@ jobs:
           echo "USER_DATA=$USER_DATA" >> .env
           echo "URLS=$URLS" >> .env
           echo "HEADLESS_MODE=$HEADLESS_MODE" >> .env
-          
-      - name: Debug .env File
-        run: cat .env
 
-
-      - name: Generate LastCheckedListings.json
-        run: |
-          echo '{}' > LastCheckedListings.json
-
+      # Step 5: Run the bot
       - name: Run Bot
         run: |
           node index.js
