@@ -18,12 +18,12 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: v23.2.0  # Specify your Node.js version
+          node-version: v18  # Specify your Node.js version
 
       # Install dependencies
       - name: Install Dependencies
-        run: |
-          npm install
+        run: npm ci
+
 
       # Load environment variables from GitHub Secrets
       - name: Set environment variables
@@ -42,5 +42,5 @@ jobs:
           
       # Run the bot
       - name: Run Bot
-        run: |
-          node index.js
+        run: node --trace-warnings index.js
+
