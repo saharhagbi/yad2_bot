@@ -1,8 +1,8 @@
-name: Run Bot Every 1 Minutes
+name: Run Bot Every Minute
 
 on:
   schedule:
-    - cron: "*/1 * * * *"  # Runs every 1 minutes
+    - cron: "*/1 * * * *"  # Runs every 1 minute
   workflow_dispatch:       # Allows manual triggering
 
 jobs:
@@ -21,6 +21,22 @@ jobs:
       - name: Install Dependencies
         run: |
           npm install
+
+      - name: Inject Environment Variables
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          USER_DATA: ${{ secrets.USER_DATA }}
+          URLS: ${{ secrets.URLS }}
+          HEADLESS_MODE: ${{ secrets.HEADLESS_MODE }}
+        run: |
+          echo "TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN" > .env
+          echo "USER_DATA=$USER_DATA" >> .env
+          echo "URLS=$URLS" >> .env
+          echo "HEADLESS_MODE=$HEADLESS_MODE" >> .env
+
+      - name: Generate LastCheckedListings.json
+        run: |
+          echo '{}' > LastCheckedListings.json
 
       - name: Run Bot
         run: |
