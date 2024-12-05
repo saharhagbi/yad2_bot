@@ -89,27 +89,26 @@ const main = async () => {
 
     console.log('Starting periodic listing checks...');
     let lastCheckedListings = loadLastCheckedListings(filePath);
-
-    while (true) {
-        for (const url of urls) {
-            const newListings = await fetchYad2Listings(url);
-            for (const listing of newListings) {
-                const listingKey = `${listing.title}-${listing.price}`;
-                if (!lastCheckedListings[listingKey]) {
-                    const message = `New listing on Yad2:\n\nTitle: ${listing.title}\nPrice: ${listing.price}\nLink: ${listing.link}`;
-                    users.forEach((user) => {
-                        if (listing.title !== 'No title') sendToTelegram(user.id, message);
-                    });
-                    lastCheckedListings[listingKey] = true;
-                }
+    
+    for (const url of urls) {
+        const newListings = await fetchYad2Listings(url);
+        for (const listing of newListings) {
+            const listingKey = `${listing.title}-${listing.price}`;
+            if (!lastCheckedListings[listingKey]) {
+                const message = `New listing on Yad2:\n\nTitle: ${listing.title}\nPrice: ${listing.price}\nLink: ${listing.link}`;
+                users.forEach((user) => {
+                    if (listing.title !== 'No title') sendToTelegram(user.id, message);
+                });
+                lastCheckedListings[listingKey] = true;
             }
         }
-        saveLastCheckedListings(filePath, lastCheckedListings);
-        console.log('Updated last-checked listings:', lastCheckedListings);
-        console.log('------------------------------------------------------------------');
-        console.log('Waiting for 1 minute...');
-        await new Promise((resolve) => setTimeout(resolve, 60000)); // Wait for 1 minute
     }
+    saveLastCheckedListings(filePath, lastCheckedListings);
+    console.log('Updated last-checked listings:', lastCheckedListings);
+    console.log('------------------------------------------------------------------');
+    console.log('Waiting for 1 minute...');
+    await new Promise((resolve) => setTimeout(resolve, 60000)); // Wait for 1 minute
+    
 };
 
 // Run the main function
