@@ -19,11 +19,8 @@ if (urls.length === 0) {
     console.warn("No URLs found in URLS. Check your .env file.");
 }
 
-
-
 // Initialize the Telegram bot
 const bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: false });
-
 
 // Function to send messages to Telegram
 const sendToTelegram = async (chatId, message) => {
@@ -40,15 +37,15 @@ const fetchYad2Listings = async (page, url) => {
     try {
         console.log(`Navigating to: ${url}`);
         const response = await page.goto(url);
-            if (response) {
-                console.log(`Response status: ${response.status()} for URL: ${url}`);
-            } else {
-                console.log(`No response received, possible navigation issue.`);
-            }
+        if (response) {
+            console.log(`Response status: ${response.status()} for URL: ${url}`);
+        } else {
+            console.log(`No response received, possible navigation issue.`);
+        }
 
         const noResultsSelector = '.no-feed-results-with-alert_title__HVFR0';
         const hasNoResults = await page.$(noResultsSelector);
-        
+
         if (hasNoResults) {
             console.log('No results found for this URL, skipping to the next URL.');
             return [];
@@ -81,7 +78,7 @@ const loadLastCheckedListings = (filePath) => {
         console.error(`File not found at: ${filePath}`);
     } else {
         console.log('File found!');
-}
+    }
 
     if (fs.existsSync(filePath)) {
         const data = fs.readFileSync(filePath, 'utf8');
@@ -114,14 +111,16 @@ const main = async () => {
                 if (!lastCheckedListings[listingKey]) {
                     const message = `New listing on Yad2:\n\nTitle: ${listing.title}\nPrice: ${listing.price}\nLink: ${listing.link}`;
                     users.forEach(user => {
-                        listing.title !== 'No title' && sendToTelegram(user.id, message);
+                        if (listing.title !== 'No title') {
+                            sendToTelegram(user.id, message);
+                        }
                     });
                     lastCheckedListings[listingKey] = true;
                 }
             }
         }
         saveLastCheckedListings(filePath, lastCheckedListings);
-        console.log('LAST DATA:')
+        console.log('LAST DATA:');
         console.log(lastCheckedListings);
         console.log('------------------------------------------------------------------');
         console.log('Waiting for 1 minute...');
