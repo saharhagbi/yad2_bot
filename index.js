@@ -21,8 +21,6 @@ if (urls.length === 0) {
     console.warn("No URLs found in URLS. Check your GitHub secrets or .env file.");
 }
 
-}
-
 // Initialize the Telegram bot
 const bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: false });
 
