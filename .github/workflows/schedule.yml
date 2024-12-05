@@ -37,8 +37,9 @@ jobs:
           echo "HEADER=$HEADER" >> .env
           # For testing: print env vars (comment/remove in production)
           echo "Environment variables set."
-
-
+          echo "TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN"
+          echo "USER_DATA=$USER_DATA"
+          
       # Run the bot
       - name: Run Bot
         run: |
