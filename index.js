@@ -105,9 +105,6 @@ const main = async () => {
     }
     saveLastCheckedListings(filePath, lastCheckedListings);
     console.log('Updated last-checked listings:', lastCheckedListings);
-    console.log('------------------------------------------------------------------');
-    console.log('Waiting for 1 minute...');
-    await new Promise((resolve) => setTimeout(resolve, 60000)); // Wait for 1 minute
     
 };
 
