@@ -2,17 +2,32 @@ require('dotenv').config();
 const axios = require('axios');
 const cheerio = require('cheerio');
 const TelegramBot = require('node-telegram-bot-api');
-const fs = require('fs');
+const mongoose = require('mongoose');
 
 // Load environment variables
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const MONGO_URI = process.env.MONGO_URI;
 const users = JSON.parse(process.env.USER_DATA);
 const urls = JSON.parse(process.env.URLS);
 
-if (!TELEGRAM_BOT_TOKEN || !users || !urls) {
+if (!TELEGRAM_BOT_TOKEN || !MONGO_URI || !users || !urls) {
     console.error("Missing required environment variables. Please check your .env file.");
     process.exit(1);
 }
+
+// Initialize Mongoose
+mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log("Connected to MongoDB"))
+    .catch(err => console.error("MongoDB connection error:", err));
+
+// Define the listing schema
+const listingSchema = new mongoose.Schema({
+    link: { type: String, unique: true, required: true },
+    title: String,
+    price: String,
+}, { timestamps: true });
+
+const Listing = mongoose.model('Listing', listingSchema);
 
 // Base URL of the Yad2 website
 const BASE_URL = 'https://www.yad2.co.il';
@@ -24,7 +39,6 @@ const bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: false });
 const sendToTelegram = async (chatId, message) => {
     try {
         await bot.sendMessage(chatId, message);
-        console.log(`Message sent to ${chatId}`);
     } catch (error) {
         console.error(`Error sending message to ${chatId}:`, error);
     }
@@ -33,11 +47,9 @@ const sendToTelegram = async (chatId, message) => {
 // Function to fetch new apartment listings from Yad2 using Axios and Cheerio
 const fetchYad2Listings = async (url) => {
     try {
-        console.log(`Fetching URL: ${url}`);
         const response = await axios.get(url);
 
         if (!response || !response.data) {
-            console.log(`No response received from URL: ${url}`);
             return [];
         }
 
@@ -46,11 +58,9 @@ const fetchYad2Listings = async (url) => {
 
         const noResultsSelector = '.no-feed-results-with-alert_title__HVFR0';
         if ($(noResultsSelector).length > 0) {
-            console.log('No results found for this URL.');
             return [];
         }
 
-        console.log('Fetching listings...');
         const listings = [];
         $('#__next ul li').each((index, element) => {
             const title = $(element).find('.item-data-content_heading__tphH4').text().trim() || 'No title';
@@ -60,7 +70,6 @@ const fetchYad2Listings = async (url) => {
 
             listings.push({ title, price, link });
         });
-
         return listings;
     } catch (error) {
         console.error(`Error fetching Yad2 listings from URL: ${url}`, error);
@@ -68,44 +77,44 @@ const fetchYad2Listings = async (url) => {
     }
 };
 
-// Function to load the last checked listings from a file
-const loadLastCheckedListings = (filePath) => {
-    console.log(`Looking for file at: ${filePath}`);
-    if (fs.existsSync(filePath)) {
-        const data = fs.readFileSync(filePath, 'utf8');
-        return JSON.parse(data);
+// Function to save a listing to the database
+const saveListing = async (listing) => {
+    if (listing.price !== 'No price' && listing.title !== 'No title') 
+    {
+        try {
+        await Listing.create(listing);
+        return true;
+    } catch (error) {
+        if (error.code === 11000) {
+            
+        } else {
+            console.error("Error saving listing:", error);
+        }
+        return false;
     }
-    return {};
-};
-
-// Function to save the last checked listings to a file
-const saveLastCheckedListings = (filePath, data) => {
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+}
 };
 
 // Main function to periodically check for new listings
 const main = async () => {
-    const filePath = 'lastCheckedListings.json';
+    console.log('Checking for new listings...');
 
-    console.log('Starting periodic listing checks...');
-    let lastCheckedListings = loadLastCheckedListings(filePath);
-    
     for (const url of urls) {
         const newListings = await fetchYad2Listings(url);
+
         for (const listing of newListings) {
-            const listingKey = `${listing.title}-${listing.price}`;
-            if (!lastCheckedListings[listingKey]) {
+            const isNew = await saveListing(listing);
+            if (isNew) {
                 const message = `New listing on Yad2:\n\nTitle: ${listing.title}\nPrice: ${listing.price}\nLink: ${listing.link}`;
                 users.forEach((user) => {
                     if (listing.title !== 'No title') sendToTelegram(user.id, message);
                 });
-                lastCheckedListings[listingKey] = true;
             }
         }
     }
-    saveLastCheckedListings(filePath, lastCheckedListings);
-    console.log('Updated last-checked listings:', lastCheckedListings);
-    
+    console.log('Finished checking listings.');
+
+    process.exit(0); // Exit the process
 };
 
 // Run the main function
