@@ -16,7 +16,7 @@ if (!TELEGRAM_BOT_TOKEN || !MONGO_URI || !users || !urls) {
 }
 
 // Initialize Mongoose
-mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(MONGO_URI)
     .then(() => console.log("Connected to MongoDB"))
     .catch(err => console.error("MongoDB connection error:", err));
 
@@ -44,6 +44,47 @@ const sendToTelegram = async (chatId, message) => {
     }
 };
 
+const fetchYad2Listings3 = async (url) => {
+    try {
+        const response = await axios.get(url);
+
+        if (!response || !response.data) {
+            return [];
+        }
+
+        const html = response.data;
+        const $ = cheerio.load(html);
+
+        // Check for CAPTCHA indicators
+        const captchaKeywords = ['CAPTCHA'];
+        const isCaptcha = captchaKeywords.some(keyword => html.includes(keyword));
+        if (isCaptcha) {
+            console.error(`CAPTCHA encountered while accessing URL: ${url}`);
+            return []; // Return an empty array or handle the CAPTCHA appropriately
+        }
+
+        const noResultsSelector = '.no-feed-results-with-alert_title__HVFR0';
+        if ($(noResultsSelector).length > 0) {
+            return [];
+        }
+
+        const listings = [];
+        $('#__next ul li').each((index, element) => {
+            const title = $(element).find('.item-data-content_heading__tphH4').text().trim() || 'No title';
+            const price = $(element).find('span.price_price__xQt90').text().trim() || 'No price';
+            const relativeLink = $(element).find('a').attr('href') || 'No link';
+            const link = relativeLink.startsWith('http') ? relativeLink : `${BASE_URL}${relativeLink}`;
+
+            listings.push({ title, price, link });
+        });
+        return listings;
+    } catch (error) {
+        console.error(`Error fetching Yad2 listings from URL: ${url}`, error);
+        return [];
+    }
+};
+
+
 // Function to fetch new apartment listings from Yad2 using Axios and Cheerio
 const fetchYad2Listings = async (url) => {
     try {
@@ -70,6 +111,7 @@ const fetchYad2Listings = async (url) => {
 
             listings.push({ title, price, link });
         });
+        console.log(`Fetched ${listings.length} listings from URL: ${url}`);
         return listings;
     } catch (error) {
         console.error(`Error fetching Yad2 listings from URL: ${url}`, error);
@@ -99,23 +141,31 @@ const saveListing = async (listing) => {
 const main = async () => {
     console.log('Checking for new listings...');
 
-    for (const url of urls) {
-        const newListings = await fetchYad2Listings(url);
+    try {
+        for (const url of urls) {
+            const newListings = await fetchYad2Listings(url);
 
-        for (const listing of newListings) {
-            const isNew = await saveListing(listing);
-            if (isNew) {
-                const message = `New listing on Yad2:\n\nTitle: ${listing.title}\nPrice: ${listing.price}\nLink: ${listing.link}`;
-                users.forEach((user) => {
-                    if (listing.title !== 'No title') sendToTelegram(user.id, message);
-                });
+            for (const listing of newListings) {
+                const isNew = await saveListing(listing);
+                if (isNew) {
+                    const message = `New listing on Yad2:\n\nTitle: ${listing.title}\nPrice: ${listing.price}\nLink: ${listing.link}`;
+                    users.forEach((user) => {
+                        if (listing.title !== 'No title') sendToTelegram(user.id, message);
+                    });
+                }
             }
         }
+        console.log('Finished checking listings.');
+    } catch (error) {
+        console.error('Error during main execution:', error);
+    } finally {
+        console.log('Closing MongoDB connection...');
+        await mongoose.disconnect(); // Properly close the MongoDB connection
+        console.log('MongoDB connection closed.');
+        process.exit(0); // Exit the process
     }
-    console.log('Finished checking listings.');
-
-    process.exit(0); // Exit the process
 };
 
 // Run the main function
 main().catch(console.error);
+
