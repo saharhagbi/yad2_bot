@@ -30,12 +30,12 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           USER_DATA: ${{ secrets.USER_DATA }}
           URLS: ${{ secrets.URLS }}
-          HEADLESS_MODE: ${{ secrets.HEADLESS_MODE }}
+          MONGO_URI: ${{ secrets.MONGO_URI }}
         run: |
           echo "TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN" >> .env
           echo "USER_DATA=$USER_DATA" >> .env
           echo "URLS=$URLS" >> .env
-          echo "HEADLESS_MODE=$HEADLESS_MODE" >> .env
+          echo "MONGO_URI=$MONGO_URI" >> .env
 
       # Run the bot
       - name: Run Bot
