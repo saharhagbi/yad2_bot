@@ -1,0 +1,4 @@
+TELEGRAM_BOT_TOKEN=
+USER_DATA=[{"id":,"first_name":"","last_name":""},]
+URLS=["]
+MONGO_URI=
