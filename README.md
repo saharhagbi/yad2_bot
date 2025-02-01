@@ -12,8 +12,22 @@ Yad2 Bot is a **Telegram bot** that scrapes apartment listings from Yad2 based o
 - **Real-Time Notifications**: Alerts are sent via Telegram for new apartment listings.
 - **Smart Duplicate Prevention**: Prevents duplicate notifications by tracking previously sent listings.
 - **Customizable Filters**: Users can specify location, price range, number of rooms, and other criteria.
-- **CI/CD Integration**: Runs automatically every 5 minutes via **GitHub Actions**.
+- **Automation**: Runs automatically every 5 minutes via **GitHub Actions**.
 - **MongoDB Integration**: Stores listings to ensure efficient tracking.
+
+---
+
+## Technologies Used 🛠️📌
+
+- **Programming Language**: JavaScript (Node.js)
+- **Libraries & Frameworks**:
+  - `node-telegram-bot-api` - Handles Telegram bot interactions
+  - `axios` - Fetches HTML content from Yad2
+  - `cheerio` - Parses HTML to extract apartment listings
+  - `dotenv` - Loads environment variables
+  - `mongoose` - Handles MongoDB database operations
+- **Database**: MongoDB (for storing tracked listings)
+- **Automation**: GitHub Actions (for scheduled execution)
 
 ---
 
@@ -94,7 +108,7 @@ node index.js
 
 ---
 
-## CI/CD & Automated Execution 🤖⚡🕒
+## Automated Execution 🤖⚡🕒
 
 ### **GitHub Actions Workflow**
 
@@ -125,6 +139,4 @@ You can manually trigger the bot via GitHub Actions:
 2. Create a new branch (`git checkout -b feature-branch`).
 3. Commit changes (`git commit -m "Added new feature"`).
 4. Push (`git push origin feature-branch`).
-
-##
 
