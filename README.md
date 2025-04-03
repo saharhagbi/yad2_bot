@@ -63,7 +63,7 @@ npm install
 
 ### 3. Create a Telegram Bot 🤖🔑
 
-1. Open Telegram and **search for **`BotFather`**.
+1. Open Telegram and search for **`BotFather`**.
 2. Type `/newbot` and follow the instructions to create a new bot.
 3. Copy the **bot token** and save it in the `.env` file (`TELEGRAM_BOT_TOKEN`).
 
