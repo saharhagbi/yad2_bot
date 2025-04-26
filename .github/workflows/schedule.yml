@@ -37,6 +37,12 @@ jobs:
           echo "URLS=$URLS" >> .env
           echo "MONGO_URI=$MONGO_URI" >> .env
 
+          echo "Printing env variables.."
+          echo $TELEGRAM_BOT_TOKEN
+          echo $USER_DATA
+          echo $URLS
+          echo $MONGO_URI
+
       # Run the bot
       - name: Run Bot
         run: node --trace-warnings index.js
