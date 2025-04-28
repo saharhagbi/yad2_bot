@@ -1,4 +1,5 @@
 .env
+package-lock.json
 lastCheckedListings.json
 *.log
 /node_modules/

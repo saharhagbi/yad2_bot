@@ -1,4 +1,0 @@
-TELEGRAM_BOT_TOKEN=
-USER_DATA=[{"id":,"first_name":"","last_name":""}]
-URLS=["]
-MONGO_URI="mongodb+srv://saharhagbi:6og9sd3wyVNXq3dO@yad2bot.fa8mtj8.mongodb.net/?retryWrites=true&w=majority&appName=Yad2Bot"
