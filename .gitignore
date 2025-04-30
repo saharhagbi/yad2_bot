@@ -4,3 +4,6 @@ lastCheckedListings.json
 *.log
 /node_modules/
 .DS_Store
+
+# Ignore build output
+/dist
