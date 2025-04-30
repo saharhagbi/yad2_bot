@@ -19,7 +19,7 @@ Yad2 Bot is a **Telegram bot** that scrapes apartment listings from Yad2 based o
 
 ## Technologies Used 🛠️📌
 
-- **Programming Language**: JavaScript (Node.js)
+- **Programming Language**: TypeScript (Node.js)
 - **Libraries & Frameworks**:
   - `node-telegram-bot-api` - Handles Telegram bot interactions
   - `axios` - Fetches HTML content from Yad2
@@ -37,7 +37,8 @@ Yad2 Bot is a **Telegram bot** that scrapes apartment listings from Yad2 based o
 nirhazan35-yad2_bot/
 ├── README.md
 ├── env_template.txt
-├── index.js  # Main bot logic
+├── index.ts  # Main bot logic
+├── tsconfig.json  # TypeScript configuration
 ├── package.json  # Project dependencies
 └── .github/
     └── workflows/
@@ -94,7 +95,14 @@ HEADLESS_MODE=true
 ### 5. Run the Bot 🚀📢
 
 ```sh
-node index.js
+# Build the TypeScript code
+npm run build
+
+# Run the compiled JavaScript
+npm start
+
+# Or run directly with ts-node for development
+npm run dev
 ```
 
 ---
