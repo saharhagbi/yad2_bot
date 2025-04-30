@@ -1,12 +1,9 @@
-import axios from "axios";
 import * as dotenv from "dotenv";
 import mongoose from "mongoose";
 import TelegramBot from "node-telegram-bot-api";
-import {
-  findListingById,
-  ListingInput,
-  saveListing as saveListingToDb,
-} from "./lib/mongo/operations";
+import { findListingById, saveListing } from "./lib/mongo/operations";
+import { fetchYad2Listings, Yad2Listing } from "./lib/yad2/yad2_api";
+import { sendToTelegram } from "./lib/telegram/telegram_api";
 
 // Load environment variables first
 dotenv.config();
@@ -61,142 +58,8 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-class Yad2Listing implements ListingInput {
-  id: string;
-  link: string;
-  title: string;
-  price: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-
-  constructor(id: string, link: string, title: string, price: string) {
-    this.id = id;
-    this.link = link;
-    this.title = title;
-    this.price = price;
-  }
-}
-
-// Base URL of the Yad2 website
-const BASE_URL = "https://www.yad2.co.il";
-
 // Initialize the Telegram bot
 const bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: false });
-
-// Function to send messages to Telegram
-const sendToTelegram = async (
-  chatId: number,
-  message: string
-): Promise<boolean> => {
-  try {
-    console.log("Message content:", message);
-
-    // Return a new Promise that wraps the bot.sendMessage Promise
-    return new Promise<boolean>((resolve, reject) => {
-      bot
-        .sendMessage(chatId, message)
-        .then((result: TelegramBot.Message) => {
-          console.log("Message sent successfully:", result);
-          resolve(true);
-        })
-        .catch((error: TelegramBot.Message) => {
-          console.error("Error sending message:", error);
-          resolve(false); // resolve with false instead of rejecting
-        });
-    });
-  } catch (error) {
-    console.error("Error sending message:", error);
-    return false;
-  }
-};
-
-const fetchYad2Listings = async (url: string): Promise<Yad2Listing[]> => {
-  try {
-    // Parse the URL parameters
-    const urlParams = new URL(url).searchParams;
-
-    // Construct the API URL with the parameters
-    const apiUrl = "https://gw.yad2.co.il/feed-search-legacy/realestate/rent";
-
-    interface ApiResponse {
-      data: {
-        feed: {
-          feed_items: Array<{
-            id: string;
-            type: string;
-            row_1: string;
-            price?: string;
-          }>;
-        };
-      };
-    }
-
-    const response = await axios.get<ApiResponse>(apiUrl, {
-      headers: {
-        Accept: "application/json, text/plain, */*",
-        "Accept-Language": "he-IL",
-        "Cache-Control": "no-cache",
-        Pragma: "no-cache",
-        "Sec-Ch-Ua":
-          '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
-        "Sec-Ch-Ua-Mobile": "?0",
-        "Sec-Ch-Ua-Platform": '"Windows"',
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-      },
-      params: {
-        area: urlParams.get("area"),
-        city: urlParams.get("city"),
-        neighborhood: urlParams.get("neighborhood"),
-        propertyGroup: "apartments",
-        rooms: `${urlParams.get("minRooms")}-${urlParams.get("maxRooms")}`,
-        price: `${urlParams.get("minPrice")}-${urlParams.get("maxPrice")}`,
-        page: 1,
-        forceLdLoad: true,
-      },
-    });
-
-    if (response.data?.data?.feed?.feed_items) {
-      const listings = response.data.data.feed.feed_items
-        .filter((item) => item.type === "ad")
-        .map(
-          (item) =>
-            new Yad2Listing(
-              item.id,
-              `https://www.yad2.co.il/realestate/item/${item.id}`,
-              item.row_1.trim(),
-              item.price || "No price"
-            )
-        );
-
-      // Remove duplicates based on id
-      const uniqueListings = Array.from(
-        new Map(
-          listings.map((listing) => {
-            const id = listing.link.split("/").pop(); // Extract id from the link
-            return [id, listing];
-          })
-        ).values()
-      );
-
-      console.log(`Found ${uniqueListings.length} listings`);
-      return uniqueListings;
-    }
-
-    return [];
-  } catch (error) {
-    console.error("Error fetching listings:", error);
-    return [];
-  }
-};
-
-// Function to save a listing to the database
-const saveListing = async (listing: Yad2Listing): Promise<boolean> => {
-  if (listing.price !== "No price" && listing.title !== "No title") {
-    return await saveListingToDb(listing);
-  }
-  return false;
-};
 
 // Main function to periodically check for new listings
 const main = async (): Promise<void> => {
@@ -218,12 +81,14 @@ const main = async (): Promise<void> => {
         }
 
         // If the listing doesn't exist, save it
-        const isNew = await saveListing(listing);
-        console.log(`Is new listing: ${isNew}`);
-        if (isNew) {
-          const message = `Title: ${listing.title}\nPrice: ${listing.price}\nLink: ${listing.link}`;
-          const response = await sendToTelegram(user.id, message);
-          console.log(`Telegram response: ${response}`);
+        if (listing.price !== "No price" && listing.title !== "No title") {
+          const isNew = await saveListing(listing);
+          console.log(`Is new listing: ${isNew}`);
+          if (isNew) {
+            const message = `Title: ${listing.title}\nPrice: ${listing.price}\nLink: ${listing.link}`;
+            const response = await sendToTelegram(bot, user.id, message);
+            console.log(`Telegram response: ${response}`);
+          }
         }
       }
     }
