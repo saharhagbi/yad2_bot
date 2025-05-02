@@ -1,9 +1,9 @@
-import * as dotenv from "dotenv";
+import dotenv from "dotenv";
 import mongoose from "mongoose";
 import TelegramBot from "node-telegram-bot-api";
-import { findListingById, saveListing } from "./lib/mongo/operations";
-import { fetchYad2Listings, Yad2Listing } from "./lib/yad2/yad2_api";
-import { sendToTelegram } from "./lib/telegram/telegram_api";
+import { findListingById, saveListing } from "./lib/mongo/operations.js";
+import { sendToTelegram } from "./lib/telegram/telegram_api.js";
+import { fetchYad2Listings } from "./lib/yad2/yad2_api.js";
 
 // Load environment variables first
 dotenv.config();
@@ -60,7 +60,9 @@ const main = async (): Promise<void> => {
 
   try {
     for (const url of urls) {
+      console.log(`Checking URL: ${url}`);
       const newListings = await fetchYad2Listings(url);
+      console.log(`Found ${newListings.length} new listings.`);
 
       for (const listing of newListings) {
         console.log(`Checking listing: ${listing?.title}`);

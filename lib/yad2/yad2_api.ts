@@ -34,6 +34,7 @@ export const fetchYad2Listings = async (
     // Construct the API URL with the parameters
     const apiUrl = process.env.API_URL;
     const apiUrlWithParams = `${apiUrl}?${urlParams.toString()}`;
+    console.log(`Fetching listings from: ${apiUrlWithParams}`);
     
     // Add a small delay to avoid rate limiting
     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -87,6 +88,8 @@ export const fetchYad2Listings = async (
       },
     });
 
+    console.log("API response message:", response);
+    console.log("API response:", response.data);
     if (response.data?.data?.markers && Array.isArray(response.data.data.markers)) {
       const listings = response.data.data.markers.map((marker) => {
         // Extract the token (new ID)
