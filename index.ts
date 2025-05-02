@@ -38,13 +38,6 @@ const urls: string[] = (() => {
   }
 })();
 
-// Log all environment variables
-console.log("Environment Variables:");
-console.log("TELEGRAM_BOT_TOKEN:", process.env.TELEGRAM_BOT_TOKEN);
-console.log("MONGO_URI:", process.env.MONGO_URI);
-console.log("USER_DATA:", process.env.USER_DATA);
-console.log("URLS:", process.env.URLS);
-
 if (!TELEGRAM_BOT_TOKEN || !MONGO_URI || !user || !urls) {
   console.error(
     "Missing required environment variables. Please check your .env file."

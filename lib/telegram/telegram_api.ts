@@ -20,7 +20,7 @@ export const sendToTelegram = async (
       bot
         .sendMessage(chatId, message)
         .then((result: TelegramBot.Message) => {
-          console.log("Message sent successfully:", result);
+          console.log("Message sent successfully!");
           resolve(true);
         })
         .catch((error: TelegramBot.Message) => {

@@ -3,7 +3,7 @@ name: Yad2 Apartment Bot
 on:
   # schedule:
   #   - cron: "*/5 * * * *"  # Runs every 5 minutes
-  workflow_dispatch:       # Allows manual triggering
+  workflow_dispatch: # Allows manual triggering
 
 jobs:
   run-bot:
@@ -18,7 +18,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18  
+          node-version: 18
 
       # Install dependencies
       - name: Install Dependencies
@@ -29,7 +29,7 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           USER_DATA: ${{ secrets.USER_DATA }}
-          URLS: ${{ secrets.URLS }}
+          URLS: ["https://www.yad2.co.il/realestate/rent?minPrice=5000&maxPrice=6500&minRooms=3&maxRooms=5&multiNeighborhood=661%2C156&zoom=14&sort=price-asc"]
           MONGO_URI: ${{ secrets.MONGO_URI }}
         run: |
           echo "TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN" >> .env
@@ -37,12 +37,6 @@ jobs:
           echo "URLS=$URLS" >> .env
           echo "MONGO_URI=$MONGO_URI" >> .env
 
-          echo "Printing env variables.."
-          echo $TELEGRAM_BOT_TOKEN
-          echo $USER_DATA
-          echo $URLS
-          echo $MONGO_URI
-
       # Run the bot
       - name: Run Bot
-        run: node --trace-warnings index.js
+        run: npm run build && npm run start
