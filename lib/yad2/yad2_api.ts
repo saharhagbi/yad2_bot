@@ -36,10 +36,10 @@ export const fetchYad2Listings = async (
     const apiUrl = process.env.API_URL;
     const apiUrlWithParams = `${apiUrl}?${urlParams.toString()}`;
     console.log(`Fetching listings from: ${apiUrlWithParams}`);
-    
+
     // Add a small delay to avoid rate limiting
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    
+
     // Define the new API response structure
     interface ApiResponse {
       data: {
@@ -75,16 +75,17 @@ export const fetchYad2Listings = async (
     }
 
     // Create proxy agent with the provided credentials
-    const proxyIP = 'geo.g-w.info';
+    const proxyIP = "geo.g-w.info";
     const proxyPort = 10080;
-    const proxyUsername = 'krhCmKqsROtqOu44';
-    const proxyPassword = 'Umtk0Tp3UlJBwAGv';
+    const proxyUsername = "krhCmKqsROtqOu44";
+    const proxyPassword = "Umtk0Tp3UlJBwAGv";
 
     // Create proxy URL
-    const proxyUrl = `http://${proxyUsername}:${proxyPassword}@${proxyIP}:${proxyPort}`;
+    // const proxyUrl = `http://${proxyUsername}:${proxyPassword}@${proxyIP}:${proxyPort}`;
+    const proxyUrl = process.env.PROXY_URL || "";
     // const proxyUrl = `http://93.115.200.159:8001`;
     const httpsAgent = new HttpsProxyAgent(proxyUrl);
-    
+
     const response = await axios.get<ApiResponse>(apiUrlWithParams, {
       headers: {
         Accept: "application/json, text/plain, */*",
@@ -101,22 +102,25 @@ export const fetchYad2Listings = async (
       httpsAgent: httpsAgent, // Add the proxy agent to the request config
     });
 
-    if (response.data?.data?.markers && Array.isArray(response.data.data.markers)) {
+    if (
+      response.data?.data?.markers &&
+      Array.isArray(response.data.data.markers)
+    ) {
       const listings = response.data.data.markers.map((marker) => {
         // Extract the token (new ID)
         const id = marker.token;
-        
+
         // Create the link using the token
         const link = `https://www.yad2.co.il/realestate/item/${id}`;
-        
+
         // Create the title from street name and house number
         const street = marker.address?.street?.text || "Unknown Street";
         const houseNumber = marker.address?.house?.number || "";
         const title = `${street} ${houseNumber}`.trim();
-        
+
         // Get the price or set to "No price" if not available
         const price = marker.price ? marker.price.toString() : "No price";
-        
+
         return new Yad2Listing(id, link, title, price);
       });
 
@@ -132,8 +136,7 @@ export const fetchYad2Listings = async (
 
       console.log(`Found ${uniqueListings.length} listings`);
       return uniqueListings;
-    }
-    else {
+    } else {
       console.error("Invalid API response format");
     }
 

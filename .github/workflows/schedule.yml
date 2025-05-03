@@ -1,8 +1,8 @@
 name: Yad2 Apartment Bot
 
 on:
-  # schedule:
-  #   - cron: "*/5 * * * *"  # Runs every 5 minutes
+  schedule:
+    - cron: "*/5 * * * *" # Runs every 5 minutes
   workflow_dispatch: # Allows manual triggering
 
 jobs:
@@ -32,12 +32,14 @@ jobs:
           URLS: ${{ secrets.URLS }}
           MONGO_URI: ${{ secrets.MONGO_URI }}
           API_URL: "https://gw.yad2.co.il/realestate-feed/rent/map"
+          PROXY_URL: ${{ secrets.PROXY_URL }}
         run: |
           echo "TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN" >> .env
           echo "USER_DATA=$USER_DATA" >> .env
           echo "URLS=$URLS" >> .env
           echo "MONGO_URI=$MONGO_URI" >> .env
           echo "API_URL=$API_URL" >> .env
+          echo "PROXY_URL=$PROXY_URL" >> .env
 
       # Run the bot
       - name: Run Bot
