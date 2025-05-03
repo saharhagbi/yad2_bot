@@ -74,11 +74,6 @@ export const fetchYad2Listings = async (
       message: string;
     }
 
-    // Create proxy agent with the provided credentials
-    const proxyIP = "geo.g-w.info";
-    const proxyPort = 10080;
-    const proxyUsername = "krhCmKqsROtqOu44";
-    const proxyPassword = "Umtk0Tp3UlJBwAGv";
 
     // Create proxy URL
     // const proxyUrl = `http://${proxyUsername}:${proxyPassword}@${proxyIP}:${proxyPort}`;
