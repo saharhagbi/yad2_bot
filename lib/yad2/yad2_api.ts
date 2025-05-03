@@ -1,4 +1,5 @@
 import axios from "axios";
+import { HttpsProxyAgent } from "https-proxy-agent";
 
 // Define the Yad2Listing class
 // TODO:
@@ -73,6 +74,17 @@ export const fetchYad2Listings = async (
       message: string;
     }
 
+    // Create proxy agent with the provided credentials
+    const proxyIP = 'geo.g-w.info';
+    const proxyPort = 10080;
+    const proxyUsername = 'krhCmKqsROtqOu44';
+    const proxyPassword = 'Umtk0Tp3UlJBwAGv';
+
+    // Create proxy URL
+    const proxyUrl = `http://${proxyUsername}:${proxyPassword}@${proxyIP}:${proxyPort}`;
+    // const proxyUrl = `http://93.115.200.159:8001`;
+    const httpsAgent = new HttpsProxyAgent(proxyUrl);
+    
     const response = await axios.get<ApiResponse>(apiUrlWithParams, {
       headers: {
         Accept: "application/json, text/plain, */*",
@@ -86,10 +98,9 @@ export const fetchYad2Listings = async (
         "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
       },
+      httpsAgent: httpsAgent, // Add the proxy agent to the request config
     });
 
-    console.log("API response message:", response);
-    console.log("API response:", response.data);
     if (response.data?.data?.markers && Array.isArray(response.data.data.markers)) {
       const listings = response.data.data.markers.map((marker) => {
         // Extract the token (new ID)
@@ -121,6 +132,9 @@ export const fetchYad2Listings = async (
 
       console.log(`Found ${uniqueListings.length} listings`);
       return uniqueListings;
+    }
+    else {
+      console.error("Invalid API response format");
     }
 
     return [];
