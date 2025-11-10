@@ -1,25 +1,11 @@
 import mongoose from 'mongoose';
+import { ListingWithTimestamps, ListingInput } from '../../types/index.js';
 
 /**
- * Interface for listing documents in MongoDB
+ * Interface for listing documents in MongoDB with mongoose.Document
  */
-export interface ListingDocument extends mongoose.Document {
-  id: string;
-  link: string;
-  title: string;
-  price: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-/**
- * Interface for creating a new listing
- */
-export interface ListingInput {
-  id: string;
-  link: string;
-  title: string;
-  price: string;
+export interface ListingDocument extends Omit<ListingWithTimestamps, 'id'>, mongoose.Document {
+  id: string; // Our custom id field
 }
 
 /**

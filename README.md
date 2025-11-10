@@ -29,6 +29,18 @@ Yad2 Bot is a **Telegram bot** that scrapes apartment listings from Yad2 based o
 - **Database**: MongoDB (for storing tracked listings)
 - **Automation**: GitHub Actions (for scheduled execution)
 
+## Code Architecture 🏗️📐
+
+The codebase follows a modular architecture with clear separation of concerns:
+
+- **`types/`**: Centralized TypeScript type definitions for better type safety and maintainability
+- **`lib/mongo/`**: Database operations and MongoDB schema definitions
+- **`lib/telegram/`**: Telegram Bot API integration and messaging logic
+- **`lib/yad2/`**: Yad2 website scraping and API integration
+- **`lib/utils/`**: Utility functions and application constants
+
+This structure ensures code reusability, easier testing, and better maintainability.
+
 ---
 
 ## Project Structure 📂🛠️🔍
@@ -40,6 +52,24 @@ nirhazan35-yad2_bot/
 ├── index.ts  # Main bot logic
 ├── tsconfig.json  # TypeScript configuration
 ├── package.json  # Project dependencies
+├── lib/  # Core business logic
+│   ├── mongo/
+│   │   └── operations.ts  # Database operations
+│   ├── telegram/
+│   │   └── telegram_api.ts  # Telegram API integration
+│   ├── utils/
+│   │   └── constants.ts  # Application constants
+│   └── yad2/
+│       └── yad2_api.ts  # Yad2 API integration
+├── types/  # TypeScript type definitions
+│   ├── index.ts  # Main export file
+│   ├── user.ts  # User interface definitions
+│   ├── listing.ts  # Listing interfaces
+│   ├── yad2-listing.ts  # Yad2Listing class
+│   ├── yad2-api.ts  # API response interfaces
+│   ├── config.ts  # Configuration interfaces
+│   ├── common.ts  # Common utility types
+│   └── README.md  # Types documentation
 └── .github/
     └── workflows/
         └── schedule.yml  # GitHub Actions workflow for automated execution

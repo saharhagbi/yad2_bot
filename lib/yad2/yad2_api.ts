@@ -1,24 +1,6 @@
 import axios from "axios";
 import { HttpsProxyAgent } from "https-proxy-agent";
-
-// Define the Yad2Listing class
-// TODO:
-// Move to a separate file, type
-export class Yad2Listing {
-  id: string;
-  link: string;
-  title: string;
-  price: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-
-  constructor(id: string, link: string, title: string, price: string) {
-    this.id = id;
-    this.link = link;
-    this.title = title;
-    this.price = price;
-  }
-}
+import { Yad2Listing, ApiResponse } from "../../types/index.js";
 
 /**
  * Fetches listings from Yad2 based on the provided URL
@@ -40,39 +22,7 @@ export const fetchYad2Listings = async (
     // Add a small delay to avoid rate limiting
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    // Define the new API response structure
-    interface ApiResponse {
-      data: {
-        markers: Array<{
-          token: string;
-          address: {
-            street: {
-              text: string;
-            };
-            house: {
-              number: number;
-              floor?: number;
-            };
-            city?: {
-              text: string;
-            };
-            neighborhood?: {
-              text: string;
-            };
-          };
-          price: number;
-          additionalDetails?: {
-            roomsCount?: number;
-            squareMeter?: number;
-          };
-          metaData?: {
-            coverImage?: string;
-            images?: string[];
-          };
-        }>;
-      };
-      message: string;
-    }
+    // API response structure is now defined in types/yad2-api.ts
 
 
     // Create proxy URL
@@ -101,7 +51,7 @@ export const fetchYad2Listings = async (
       response.data?.data?.markers &&
       Array.isArray(response.data.data.markers)
     ) {
-      const listings = response.data.data.markers.map((marker) => {
+      const listings = response.data.data.markers.map((marker: ApiResponse['data']['markers'][0]) => {
         // Extract the token (new ID)
         const id = marker.token;
 
@@ -122,7 +72,7 @@ export const fetchYad2Listings = async (
       // Remove duplicates based on id
       const uniqueListings = Array.from(
         new Map(
-          listings.map((listing) => {
+          listings.map((listing: Yad2Listing) => {
             const id = listing.id;
             return [id, listing];
           })

@@ -4,16 +4,10 @@ import TelegramBot from "node-telegram-bot-api";
 import { findListingById, saveListing } from "./lib/mongo/operations.js";
 import { sendToTelegram } from "./lib/telegram/telegram_api.js";
 import { fetchYad2Listings } from "./lib/yad2/yad2_api.js";
+import { User } from "./types/index.js";
 
 // Load environment variables first
 dotenv.config();
-
-// Define interfaces
-interface User {
-  id: number;
-  first_name?: string;
-  last_name?: string;
-}
 
 // Parse environment variables with proper type checking
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
